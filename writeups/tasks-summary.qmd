@@ -1,0 +1,25 @@
+---
+title: "Summary of exploratory tasks"
+author: 'YOUR NAMES HERE'
+date: today
+---
+
+### HTML scraping
+
+Does including header content improve predictions? Answer the question and provide quantitative evidence supporting your answer.
+
+### Bigrams
+
+Do bigrams capture additional information relevant to the classification of interest? Answer the question, **briefly** describe what analysis you conducted to arrive at your answer, and provide quantitative evidence supporting your answer.
+
+### Neural net
+
+Summarize the neural network model you trained by desribing:
+
+-   architecture
+
+-   optimization and loss
+
+-   training epochs
+
+-   predictive accuracy

@@ -1,0 +1,37 @@
+---
+title: "Predictive modeling of claims status"
+author: 'YOUR NAMES HERE'
+date: today
+---
+
+### Abstract
+
+Provide a 3-5 sentence summary of your work on the primary task. Indicate what input data was used, what method was used for binary class predictions, what method was used for multiclass predictions, and what estimated accuracies were achieved.
+
+> *Header and paragraph content was scraped from the raw webpages and processed into term frequencies of word tokens. For binary classification, a two-layer neural network yielded an estimated 81.4% accuracy; for multiclass classification, a support vector machine gave 78% accuracy.*
+
+### Preprocessing
+
+In one paragraph lay out your preprocessing pipeline. No need to provide exact step-by-step detail; just give an overview of the main components:
+
+-   what text content was extracted from HTML
+
+-   how text was cleaned
+
+-   how cleaned text was represented quantitatively
+
+### Methods
+
+Describe your final predictive models. Include one paragraph with details on the binary classification approach, and one on the multiclass approach. Include for each:
+
+-   what ML/statistical method was used
+
+-   model specification and hyperparameter selection
+
+-   training method
+
+### Results
+
+Indicate the predictive accuracy of the binary classifications and the multiclass classifications. Provide a table for each, and report sensitivity, specificity, and accuracy.[^1]
+
+[^1]: Read [this article](https://yardstick.tidymodels.org/articles/multiclass.html) on multiclass averaging.
