@@ -9,9 +9,9 @@ require(stopwords)
 require(tokenizers)
 
 # function to parse html and clean text
-parse_fn <- function(.html){
+parse_fn <- function(.html, selector = 'p'){
   read_html(.html) %>%
-    html_elements('p') %>%
+    html_elements(selector) %>%
     html_text2() %>%
     str_c(collapse = ' ') %>%
     rm_url() %>%
@@ -29,11 +29,11 @@ parse_fn <- function(.html){
 }
 
 # function to apply to claims data
-parse_data <- function(.df){
+parse_data <- function(.df, selector = 'p'){
   out <- .df %>%
     filter(str_detect(text_tmp, '<!')) %>%
     rowwise() %>%
-    mutate(text_clean = parse_fn(text_tmp)) %>%
+    mutate(text_clean = parse_fn(text_tmp, selector)) %>%
     unnest(text_clean) 
   return(out)
 }

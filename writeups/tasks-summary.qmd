@@ -1,16 +1,31 @@
 ---
 title: "Summary of exploratory tasks"
-author: 'YOUR NAMES HERE'
+author: 'Kevin Wu'
 date: today
+format:
+  html:
+    embed-resources: true
 ---
+
+```{r}
+#| include: false
+
+withr::with_dir("..", source("scripts/tasks-1-2.R", local = knitr::knit_global()))
+pct <- function(x) sprintf("%.1f%%", 100 * x)
+auc <- function(x) sprintf("%.3f", x)
+```
 
 ### HTML scraping
 
-Does including header content improve predictions? Answer the question and provide quantitative evidence supporting your answer.
+We compared paragraph text alone with paragraphs plus page headings (H1–H6). Both models used TF-IDF word features and logistic regression on `r word_pcs` principal components. We split the `r nrow(pages)` pages retained by the starter HTML filter into training and holdout sets, keeping repeated URLs together. Both tasks used the same `r length(test_rows)` held-out pages.
+
+Adding headings raised AUC from `r auc(task_results$auc[1])` to `r auc(task_results$auc[2])`, but accuracy at the 0.5 cutoff fell from **`r pct(task_results$accuracy[1])` to `r pct(task_results$accuracy[2])`**. Headings helped rank pages by relevance, while the paragraph-only model correctly classified more pages at the chosen cutoff.
 
 ### Bigrams
 
-Do bigrams capture additional information relevant to the classification of interest? Answer the question, **briefly** describe what analysis you conducted to arrive at your answer, and provide quantitative evidence supporting your answer.
+Using paragraphs and headings, we added `r bigram_pcs` components from TF-IDF bigrams to a second logistic regression that used the word model's predicted log-odds. We used out-of-fold word predictions to train this second model and compared it with a second logistic regression using only those log-odds.
+
+Adding bigrams raised accuracy from **`r pct(task_results$accuracy[3])` to `r pct(task_results$accuracy[4])`**, a net gain of `r task_results$correct[4] - task_results$correct[3]` correctly classified pages. AUC slipped from `r auc(task_results$auc[3])` to `r auc(task_results$auc[4])`. The gain at the 0.5 cutoff was small and did not extend to how well the model ranked pages.
 
 ### Neural net
 
