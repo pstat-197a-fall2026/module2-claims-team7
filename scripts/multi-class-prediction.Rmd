@@ -23,18 +23,17 @@ load('../data/claims-clean-example.RData')
 ```{r}
 # using default preprocessing
 claims <- nlp_fn(claims_clean) %>%
-  left_join(claims_clean %>% select(.id, mclass), by = ".id") %>%
-  select(-bclass)
+  left_join(claims_clean %>% select(.id, mclass), by = ".id") 
 ```
 
 ## Removing Rare Tokens
 ```{r}
-token_cols <- setdiff(names(claims), c(".id", "mclass"))
+token_cols <- setdiff(names(claims), c(".id", "bclass", "mclass"))
 
 # removes tokens that appear less than or equal to 7 times 
 token_keep <- token_cols[colSums(claims[token_cols] > 0) >= 7]
 
-claims_filtered <- claims %>% select(.id, mclass, all_of(token_keep))
+claims_filtered <- claims %>% select(.id, bclass, mclass, all_of(token_keep))
 ```
 
 # Random Forest Model Training
@@ -46,11 +45,15 @@ partitions <- claims_filtered %>%
   initial_split(prop = 0.8, strata = mclass)
 
 train_text <- training(partitions)
-train_x <- train_text %>% select(-.id, -mclass)
+test_text <- testing(partitions)
+
+# saving train/test data
+# save(train_text, test_text, file = "../data/test-train-multi-class.RData")
+
+train_x <- train_text %>% select(-.id, -mclass, -bclass)
 train_y <- train_text$mclass
 
-test_text <- testing(partitions) 
-test_x <- test_text %>% select(-.id, -mclass)
+test_x <- test_text %>% select(-.id, -mclass, -bclass)
 test_y <- test_text$mclass 
 ```
 
@@ -78,10 +81,8 @@ mean(pred_class == test_y)
 table(predicted = pred_class, actual = test_y)
 ```
 
-# Saving Model and Training Data
+# Saving Model
 ```{r}
 save(rf_fit, file = "../results/multi-class-model.RData")
-
-save(train_text, test_text, file = "../data/test-train-multi-class.RData")
 ```
 
