@@ -1,0 +1,101 @@
+---
+title: "binary-class-prediction"
+author: "Sophia Leng"
+date: "2026-11-11"
+output: html_document
+---
+
+## Binary Classification with Linear SVM
+
+To attempt to get the best binary classification model, I tried a SVM (support vector machine). The in-class activity already showed the results for a logistic regression model and the provided project scripts use a feed forward neural network. I used the performance of those models as a baseline to see how well the SVM does in comparison.
+
+The preprocessing pipeline is the same as before, given that adding headings in task 1 did not seem to improve model performance. The binary classification uses the same initial steps as the multi class such as removing rare tokens, and a training testing split stratified by the multi class. The reason for this is to use the same rows for the testing data, so the predictions can ultimately be combined into one table. 
+
+We judged that it was optimal to stratify based on multiclass preserve the proportions of all multiclass categories in both the training and testing datasets. While the binary classes were already roughly equal in number of rows, the multiclass had some categories with very few rows. In addition, stratifying by mclass would naturally result in a good split for bclass, which is built by combining mclass categories. 
+
+
+```{r}
+# libraries
+library(tidyverse)
+library(e1071)
+library(yardstick)
+
+# load existing train/test split
+# this was done in multi class prediction script and saved in data folder
+load("data/test-train-multi-class.RData")
+```
+
+Multiclass preprocessing already calculated the TF-IDF features, which are columns in the loaded train_text and test_text datasets.
+```{r}
+# separate TF-IDF score x and label y
+train_x <- train_text %>%
+  select(-.id, -mclass, -bclass)
+
+test_x <- test_text %>%
+  select(-.id, -mclass, -bclass)
+
+train_y <- factor(train_text$bclass)
+test_y <- factor(test_text$bclass)
+```
+
+Next, check to see how even the proportions are for the binary classes from this testing training split. (it is)
+```{r}
+# check proportions to see if the split is fine
+prop.table(table(train_y))
+prop.table(table(test_y))
+```
+
+## Tuning linear SVM
+
+```{r}
+set.seed(110122)
+
+# tuning cost
+tuned_svm <- tune.svm(
+  x = train_x,
+  y = train_y,
+  kernel = "linear",
+  cost = c(0.5, 1, 2, 5, 10),
+  scale = FALSE,
+  tunecontrol = tune.control(cross = 5) # 5 fold cross validation
+)
+
+# tuning results and best cost
+summary(tuned_svm)
+tuned_svm$best.parameters
+
+# save best model
+svm_model <- tuned_svm$best.model
+```
+
+## Model Evaluation
+
+```{r}
+# predict on test set
+predictions <- predict(svm_model, test_x)
+
+# prediction dataframe
+preds_df <- tibble(.id = test_text$.id, bclass = test_y, bclass.pred = predictions)
+```
+
+## Evaluation Metrics
+
+```{r}
+# accuracy
+accuracy(preds_df, truth = bclass, estimate = bclass.pred)
+
+# Confusion matrix
+conf_matrix <- conf_mat(preds_df, truth = bclass, estimate = bclass.pred)
+autoplot(conf_matrix, type = "heatmap")
+```
+
+## Save Model and Predictions
+
+```{r}
+save(svm_model, file = "../results/svm-binary-model.RData")
+save(preds_df, file = "../results/svm-binary-preds.RData")
+```
+
+The svm-binary-model.RData file contains the trained binary SVM model, while svm-binary-preds.RData contains its binary classification predictions. The binary predictions should use the same testing rows as the multiclass, so it can be combined for deliverable 3.
+
+
