@@ -1,0 +1,80 @@
+---
+title: "multi-class-prediction"
+output: html_document
+---
+
+# Initial Set Up
+```{r}
+# initial set up
+library(randomForest)
+library(tidyverse)
+library(tidymodels)
+source("../scripts/preprocessing.R")
+set.seed(110122)
+```
+
+# Preprocessing
+
+```{r}
+# load cleaned data
+load('../data/claims-clean-example.RData')
+```
+
+```{r}
+# using default preprocessing
+claims <- nlp_fn(claims_clean) %>%
+  left_join(claims_clean %>% select(.id, mclass), by = ".id") %>%
+  select(-bclass)
+```
+
+## Removing Rare Tokens
+```{r}
+token_cols <- setdiff(names(claims), c(".id", "mclass"))
+
+# removes tokens that appear less than or equal to 7 times 
+token_keep <- token_cols[colSums(claims[token_cols] > 0) >= 7]
+
+claims_filtered <- claims %>% select(.id, mclass, all_of(token_keep))
+```
+
+# Random Forest Model Training
+
+## Intial Split
+```{r}
+# splitting data into train and test
+partitions <- claims_filtered %>%
+  initial_split(prop = 0.8, strata = mclass)
+
+train_text <- training(partitions)
+train_x <- train_text %>% select(-.id, -mclass)
+train_y <- train_text$mclass
+
+test_text <- testing(partitions) 
+test_x <- test_text %>% select(-.id, -mclass)
+test_y <- test_text$mclass 
+```
+
+## Tuning mtry
+```{r}
+# tune <- tuneRF(x = train_x, y = train_y,, ntreeTry = 113, stepFactor = 1.25, 
+               # improve = 0.01, trace = T, plot = F)
+
+# tune
+
+# selecting best mtry
+mtry_best <- 55
+```
+
+## Fitting Model (takes a bit to load)
+```{r}
+rf_fit <- randomForest(x = train_x, y = train_y, mtry = mtry_best, ntree = 500, importance = T)
+```
+
+# Accuracy 
+```{r}
+pred_class <- predict(rf_fit, test_x)
+
+mean(pred_class == test_y)
+table(predicted = pred_class, actual = test_y)
+```
+
