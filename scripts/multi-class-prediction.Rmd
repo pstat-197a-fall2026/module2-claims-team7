@@ -78,3 +78,10 @@ mean(pred_class == test_y)
 table(predicted = pred_class, actual = test_y)
 ```
 
+# Saving Model and Training Data
+```{r}
+save(rf_fit, file = "../results/multi-class-model.RData")
+
+save(train_text, test_text, file = "../data/test-train-multi-class.RData")
+```
+
