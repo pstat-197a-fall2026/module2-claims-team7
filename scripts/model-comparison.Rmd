@@ -1,0 +1,6 @@
+---
+title: "model-comparison"
+output: html_document
+---
+
+## A Comparison of Binary Classification with Linear SVM and Multi-class Prediction
