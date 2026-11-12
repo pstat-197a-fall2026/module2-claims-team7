@@ -23,7 +23,7 @@ train_rows <- train_pages$page_row
 test_rows <- testing(split)$page_row
 
 # tokenize text, compute TF-IDF and project onto PCs
-# Use the lab's word preprocessing. Keep stopwords in bigrams so each
+# Use the lab's word preprocessing. Keep stop words in bigrams so each
 # token contains two adjacent words from the cleaned text.
 make_counts <- function(text, token_type) {
   documents <- tibble(page_row = pages$page_row, text)

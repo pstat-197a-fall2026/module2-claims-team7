@@ -9,6 +9,7 @@ require(stopwords)
 require(tokenizers)
 
 # function to parse html and clean text
+# transforms html to a long string of lowercase words separated by spaces
 parse_fn <- function(.html, selector = 'p'){
   read_html(.html) %>%
     html_elements(selector) %>%
@@ -28,7 +29,8 @@ parse_fn <- function(.html, selector = 'p'){
     str_replace_all("\\s+", " ")
 }
 
-# function to apply to claims data
+# function to apply to claims data 
+# applies parse_fn to all of the webpages within data frame
 parse_data <- function(.df, selector = 'p'){
   out <- .df %>%
     filter(str_detect(text_tmp, '<!')) %>%

@@ -1,6 +1,106 @@
 ---
 title: "model-comparison"
+author: "Kyle Costabile"
 output: html_document
 ---
 
-## A Comparison of Binary Classification with Linear SVM and Multi-class Prediction
+# A Comparison of Binary Classification with Linear SVM and Multi-class Prediction
+## Loading models and running them on testing data
+```{r, echo = FALSE, results='hide', message=FALSE}
+library(tidyverse)
+library(e1071)
+library(yardstick)
+library(randomForest)
+library(tidymodels)
+source("../scripts/preprocessing.R")
+```
+
+Loading models
+```{r}
+load("../data/test-train-multi-class.RData")
+bclass_svm_model <- get(load("../results/svm-binary-model.RData"))
+mclass_rf_fit <- get(load("../results/multi-class-model.RData"))
+```
+
+Setting up test data
+```{r}
+test_x <- test_text %>%
+  select(-.id, -mclass, -bclass)
+
+test_yb <- factor(test_text$bclass)
+test_ym <- factor(test_text$mclass)
+```
+
+Running models on test data
+```{r}
+bclass_svm_model_predictions <- predict(bclass_svm_model, test_x, decision.values = TRUE)
+prob_bclass <- attr(bclass_svm_model_predictions, 'decision.values')
+
+mclass_rf_fit_predictions <- predict(mclass_rf_fit, test_x, type = 'prob')
+mclass_rf_fit_predictions2 <- predict(mclass_rf_fit, test_x)
+
+#since everything is already sorted by index this can be done without the need for an inner join
+model_results <- data.frame(claim_binary = test_yb, binary_class_prediction = bclass_svm_model_predictions, probs = prob_bclass, claim_multi = test_ym, multi_class_prediction = mclass_rf_fit_predictions2) 
+model_results <- bind_cols(model_results, mclass_rf_fit_predictions)
+colnames(model_results) <- c("claim_binary", "binary_class_prediction", 
+                             "binary_decision_values", "claim_multi", 
+                             "multi_class_prediction", "prob_No_relevant_content", 
+                             "prob_physical_activity", "prob_possible_fatality", 
+                             "prob_potentially_unlawful_activity", "prob_other_claim_content")
+head(model_results, 20)
+save(model_results, file = "../results/model-evaluations/model-results-comparison.RData")
+```
+
+## Evaluating Binary Classification on sensitivity, specificity, accuracy, and roc_auc
+```{r}
+bclass_metrics <- metric_set(accuracy, 
+                             sensitivity, 
+                             specificity, 
+                             roc_auc)
+bclass_output_results <- model_results %>%
+    mutate(estimate = factor(binary_class_prediction == "Relevant claim content", 
+                             levels = c(TRUE, FALSE)),
+           truth = factor(claim_binary == "Relevant claim content", 
+                          levels = c(TRUE, FALSE))) %>%
+    bclass_metrics(estimate = estimate,
+                   truth = truth, binary_decision_values,
+                   event_level = 'second')
+```
+
+## Evaluating Multi-class Prediction on sensitivity, specificity, accuracy, and roc_auc
+```{r}
+mclass_metrics <- metric_set(accuracy,
+                             yardstick::sens, 
+                             yardstick::spec, 
+                             roc_auc)
+mclass_output_results <- model_results %>%
+    mutate(estimate = factor(multi_class_prediction),
+           truth = factor(claim_multi)) %>%
+    mclass_metrics(estimate = estimate,
+                   truth = truth, 
+                   prob_No_relevant_content, 
+                   prob_physical_activity,
+                   prob_possible_fatality,
+                   prob_potentially_unlawful_activity,
+                   prob_other_claim_content) %>%
+    mutate(.metric = case_when(.metric == "sens" ~ "sensitivity",
+                               .metric == "spec" ~ "specificity",
+                               TRUE ~ .metric))
+```
+
+```{r}
+model_evaluation <- cbind.data.frame(data.frame(Model = c("Binary Model (support vector machine)", 
+                                                          "Binary Model (support vector machine)", 
+                                                          "Binary Model (support vector machine)", 
+                                                          "Binary Model (support vector machine)",
+                                                          "Multi-class Model (random forest)",
+                                                          "Multi-class Model (random forest)",
+                                                          "Multi-class Model (random forest)",
+                                                          "Multi-class Model (random forest)")),
+                                     rbind.data.frame(bclass_output_results, 
+                                                      mclass_output_results))
+colnames(model_evaluation) <- c("Model", "Metric", "Estimator", "Estimate Value")
+model_evaluation
+save(model_evaluation, file = "../results/model-evaluations/model-evaluations.RData")
+```
+

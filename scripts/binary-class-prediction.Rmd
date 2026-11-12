@@ -22,7 +22,7 @@ library(yardstick)
 
 # load existing train/test split
 # this was done in multi class prediction script and saved in data folder
-load("data/test-train-multi-class.RData")
+load("../data/test-train-multi-class.RData")
 ```
 
 Multiclass preprocessing already calculated the TF-IDF features, which are columns in the loaded train_text and test_text datasets.
