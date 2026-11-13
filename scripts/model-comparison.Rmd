@@ -12,6 +12,9 @@ library(e1071)
 library(yardstick)
 library(randomForest)
 library(tidymodels)
+library(pROC)
+library(ggplot2)
+library(rsample)
 source("../scripts/preprocessing.R")
 ```
 
@@ -103,4 +106,79 @@ colnames(model_evaluation) <- c("Model", "Metric", "Estimator", "Estimate Value"
 model_evaluation
 save(model_evaluation, file = "../results/model-evaluations/model-evaluations.RData")
 ```
+## Plotting roc curves
+```{r}
+roc_obj <- roc(model_results$claim_binary, model_results$binary_decision_values, levels = c("N/A: No relevant content.", "Relevant claim content"))
+png("../results/model-evaluations/roc-curve-for-binary-model.png", width = 1080, height = 810, res = 100)
+plot(roc_obj, 
+   main = paste('ROC Curve for Support Vector Machine Binary Model'), 
+   col = '#1c7ed6', 
+   lwd = 3, 
+   print.auc = TRUE,
+   legacy.axes = TRUE,
+   cex.main = 0.75)
+abline(a = 0, b = 1, lty = 2, col = 'darkgray')
+dev.off()
+
+roc_obj1 <- roc(model_results$claim_multi == "N/A: No relevant content.", model_results$prob_No_relevant_content)
+png("../results/model-evaluations/roc-curve-for-multi-class-model-no-relevant-v-all.png", width = 1080, height = 810, res = 100)
+plot(roc_obj1, 
+   main = paste('ROC Curve for Random Forest Multi-class Model (N/A: No relevant content. vs all)'), 
+   col = '#1c7ed6', 
+   lwd = 3, 
+   print.auc = TRUE,
+   legacy.axes = TRUE,
+   cex.main = 0.75)
+abline(a = 0, b = 1, lty = 2, col = 'darkgray')
+dev.off()
+
+roc_obj2 <- roc(model_results$claim_multi == "Physical Activity", model_results$prob_physical_activity)
+png("../results/model-evaluations/roc-curve-for-multi-class-model-physical-activity-v-all.png", width = 1080, height = 810, res = 100)
+plot(roc_obj2, 
+   main = paste('ROC Curve for Random Forest Multi-class Model (Physical Activity vs all)'), 
+   col = '#1c7ed6', 
+   lwd = 3, 
+   print.auc = TRUE,
+   legacy.axes = TRUE,
+   cex.main = 0.75)
+abline(a = 0, b = 1, lty = 2, col = 'darkgray')
+dev.off()
+
+roc_obj3 <- roc(model_results$claim_multi == "Possible Fatality", model_results$prob_possible_fatality)
+png("../results/model-evaluations/roc-curve-for-multi-class-model-possible-fatality-v-all.png", width = 1080, height = 810, res = 100)
+plot(roc_obj3, 
+   main = paste('ROC Curve for Random Forest Multi-class Model (Possible Fatality vs all)'), 
+   col = '#1c7ed6', 
+   lwd = 3, 
+   print.auc = TRUE,
+   legacy.axes = TRUE,
+   cex.main = 0.75)
+abline(a = 0, b = 1, lty = 2, col = 'darkgray')
+dev.off()
+
+roc_obj4 <- roc(model_results$claim_multi == "Potentially unlawful activity", model_results$prob_potentially_unlawful_activity)
+png("../results/model-evaluations/roc-curve-for-multi-class-model-potential-unlawful-v-all.png", width = 1080, height = 810, res = 100)
+plot(roc_obj4, 
+   main = paste('ROC Curve for Random Forest Multi-class Model (Potentially Unlawful Activity vs all)'), 
+   col = '#1c7ed6', 
+   lwd = 3, 
+   print.auc = TRUE,
+   legacy.axes = TRUE,
+   cex.main = 0.75)
+abline(a = 0, b = 1, lty = 2, col = 'darkgray')
+dev.off()
+
+roc_obj5 <- roc(model_results$claim_multi == "Other claim content", model_results$prob_other_claim_content)
+png("../results/model-evaluations/roc-curve-for-multi-class-model-other-claim-v-all.png", width = 1080, height = 810, res = 100)
+plot(roc_obj5, 
+   main = paste('ROC Curve for Random Forest Multi-class Model (Other Claim Content vs all)'), 
+   col = '#1c7ed6', 
+   lwd = 3, 
+   print.auc = TRUE,
+   legacy.axes = TRUE,
+   cex.main = 0.75)
+abline(a = 0, b = 1, lty = 2, col = 'darkgray')
+dev.off()
+```
+
 
