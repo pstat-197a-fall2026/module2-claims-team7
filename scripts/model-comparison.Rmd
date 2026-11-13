@@ -15,6 +15,7 @@ library(tidymodels)
 library(pROC)
 library(ggplot2)
 library(rsample)
+library(knitr)
 source("../scripts/preprocessing.R")
 ```
 
@@ -50,10 +51,23 @@ colnames(model_results) <- c("claim_binary", "binary_class_prediction",
                              "multi_class_prediction", "prob_No_relevant_content", 
                              "prob_physical_activity", "prob_possible_fatality", 
                              "prob_potentially_unlawful_activity", "prob_other_claim_content")
-head(model_results, 20)
+head(model_results, 10)
 preds_group7 <- model_results[,c("claim_binary", "binary_class_prediction", "claim_multi", "multi_class_prediction")]
 save(model_results, file = "../results/model-evaluations/model-results-comparison.RData")
 save(preds_group7, file = "../results/preds-group7.RData")
+```
+## Table representation of data
+```{r}
+print("Table for Binary Class Predictor")
+binary_class_results_summary <- table(predicted = model_results$binary_class_prediction, actual = model_results$claim_binary)
+binary_class_results_summary
+save(binary_class_results_summary, file = "../results/model-evaluations/binary-class-results-summary.RData")
+```
+```{r}
+print("Table for Multi-Class Predictor")
+multi_class_results_summary <- table(predicted = model_results$multi_class_prediction, actual = model_results$claim_multi)
+multi_class_results_summary
+save(multi_class_results_summary, file = "../results/model-evaluations/multi-class-results-summary.RData")
 ```
 
 ## Evaluating Binary Classification on sensitivity, specificity, accuracy, and roc_auc
