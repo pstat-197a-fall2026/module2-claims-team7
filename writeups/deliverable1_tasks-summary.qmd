@@ -1,6 +1,6 @@
 ---
 title: "Summary of exploratory tasks"
-author: 'Kevin Wu'
+author: 'Kevin Wu, Hannah Damm'
 date: today
 format:
   html:
@@ -31,10 +31,12 @@ Adding bigrams raised accuracy from **`r pct(task_results$accuracy[3])` to `r pc
 
 Summarize the neural network model you trained by desribing:
 
--   architecture
+-   architecture: The model takes each page's paragraph and heading content and converts it to TF-IDF features using the 5,000 most frequent tokens, learned from the training pages. These are used into a dropout layer with rate 0.5, a hidden dense layer of 16 units with ReLU activation, a second dropout layer with rate 0.5, and a single output unit with a sigmoid activation that gives the probability a page is a claim.
 
--   optimization and loss
+-   optimization and loss: The network was trained with binary cross-entropy loss and the Adam optimizer learning rate 0.001, batch size 32. We compared four configurations 16 or 64 hidden units, dropout of 0.2 or 0.5 on a validation set held out from the training pages and chose the one with the lowest validation loss.
 
--   training epochs
+-   training epochs: Training used early stopping on validation loss up to 30 epochs, patience of 3. The selected configuration reached its best validation loss at epoch 7 so the final model was refit on all training pages for 7 epochs.
 
--   predictive accuracy
+-   predictive accuracy: On the held-out test pages the network reached an accuracy of 0.780, 334 of 428 pages correct, and an AUC of 0.839. This is higher than the best principal component logistic regression from task 1 with accuracy 0.755 and AUC 0.829, so the network performs at least as well as the PCR approach.
+
+
