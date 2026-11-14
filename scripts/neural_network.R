@@ -2,12 +2,11 @@
 library(tidyverse)
 library(rsample)
 library(yardstick)
-library(keras)
-library(tensorflow)
+library(keras3)
 
 if (!exists("task_results")) source("scripts/tasks-1-2.R")
 
-tensorflow::set_random_seed(110122)
+keras3::set_random_seed(110122)
 
 text_col <- "heading_text"
 
@@ -81,5 +80,5 @@ print(all_results)
 
 
 dir.create("results", showWarnings = FALSE)
-save_model_tf(final_model, "results/nn-binary-model")
+final_model$save("results/nn-binary-model.keras")
 save(all_results, tune_results, file = "results/task-3-results.RData")
