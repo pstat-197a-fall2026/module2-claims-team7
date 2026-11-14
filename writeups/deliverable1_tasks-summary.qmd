@@ -38,5 +38,3 @@ Summarize the neural network model you trained by desribing:
 -   training epochs: Training used early stopping on validation loss up to 30 epochs, patience of 3. The selected configuration reached its best validation loss at epoch 7 so the final model was refit on all training pages for 7 epochs.
 
 -   predictive accuracy: On the held-out test pages the network reached an accuracy of 0.780, 334 of 428 pages correct, and an AUC of 0.839. This is higher than the best principal component logistic regression from task 1 with accuracy 0.755 and AUC 0.829, so the network performs at least as well as the PCR approach.
-
-
